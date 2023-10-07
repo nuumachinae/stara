@@ -111,7 +111,13 @@ protected:
         request_t& request = this->request();
         ssize_t amount = 0;
         int err = 0;
-        err = all_write_request(amount, writer, request, argc, argv, env);
+        
+        LOGGER_IS_LOGGED_INFO("!(err = all_write_request(amount, writer, request, argc, argv, env))...");
+        if (!(err = all_write_request(amount, writer, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_write_request(amount, writer, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_write_request(amount, writer, request, argc, argv, env))");
+        }
         return err;
     }
 
@@ -121,8 +127,14 @@ protected:
         size_t length = 0;
         const char_t* chars = 0;
         request_method_t& method = this->request_method();
+        
+        LOGGER_IS_LOGGED_INFO("(chars = method.has_chars(length))...");
         if ((chars = method.has_chars(length))) {
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = method.has_chars(" << length << "))");
+            LOGGER_IS_LOGGED_INFO("this->outln(chars = \"" << chars << "\", length = " << length << ")...");
             this->outln(chars, length);
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on (\"" << chars << "\" = method.has_chars(" << length << "))");
         }
         return err;
     }
@@ -133,8 +145,14 @@ protected:
         size_t length = 0;
         const char_t* chars = 0;
         request_resource_t& resource = this->request_resource();
+        
+        LOGGER_IS_LOGGED_INFO("(chars = resource.has_chars(length))...");
         if ((chars = resource.has_chars(length))) {
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = resource.has_chars(" << length << "))");
+            LOGGER_IS_LOGGED_INFO("this->outln(chars = \"" << chars << "\", length = " << length << ")...");
             this->outln(chars, length);
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on (\"" << chars << "\" = resource.has_chars(" << length << "))");
         }
         return err;
     }
@@ -142,7 +160,12 @@ protected:
     /// ...write_request
     virtual int write_request(ssize_t& amount, writer_t& writer, request_t& request, int argc, char_t** argv, char** env) {
         int err = 0;
-        request.write(amount, writer);
+        LOGGER_IS_LOGGED_INFO("((request.write(amount, writer)))...");
+        if ((request.write(amount, writer))) {
+            LOGGER_IS_LOGGED_INFO("...((request.write(" << amount << ", writer)))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on ((request.write(" << amount << ", writer)))");
+        }
         return err;
     }
     virtual int before_write_request(ssize_t& amount, writer_t& writer, request_t& request, int argc, char_t** argv, char** env) {

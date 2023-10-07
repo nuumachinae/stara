@@ -16,12 +16,24 @@
 ///   File: main.hpp
 ///
 /// Author: $author$
-///   Date: 9/2/2023
+///   Date: 9/2/2023, 10/7/2023
 //////////////////////////////////////////////////////////////////////////
 #ifndef XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_HPP
 #define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_HPP
 
 #include "xos/app/console/protocol/xttp/server/main_opt.hpp"
+
+#include "xos/protocol/http/url/encoded/reader.hpp"
+#include "xos/protocol/http/form/field.hpp"
+#include "xos/protocol/http/form/fields.hpp"
+
+#include "xos/protocol/http/request/method/which.hpp"
+#include "xos/protocol/http/request/method/name.hpp"
+#include "xos/protocol/http/request/method/nameof.hpp"
+#include "xos/protocol/http/request/resource/which.hpp"
+#include "xos/protocol/http/request/resource/identifier.hpp"
+#include "xos/protocol/http/request/line.hpp"
+#include "xos/protocol/http/request/message.hpp"
 
 #include "xos/protocol/http/response/status/codeof.hpp"
 #include "xos/protocol/http/response/status/reason.hpp"
@@ -71,16 +83,36 @@ protected:
     typedef typename extends::out_writer_t out_writer_t;
     typedef typename extends::err_writer_t err_writer_t;
 
+    typedef typename extends::file_reader_t file_reader_t;
+
     typedef typename extends::headers_t headers_t;
     typedef typename extends::content_encoding_header_t content_encoding_header_t;
     typedef typename extends::content_type_header_t content_type_header_t;
     typedef typename extends::content_length_header_t content_length_header_t;
 
     typedef typename extends::content_t content_t;
+    typedef typename extends::content_string_t content_string_t;
     typedef typename extends::content_type_t content_type_t;
+    typedef typename extends::content_type_char_t content_type_char_t;
+    typedef typename extends::url_encoded_form_content_type_t url_encoded_form_content_type_t;
     typedef typename extends::text_content_type_t text_content_type_t;
     typedef typename extends::json_content_type_t json_content_type_t;
     typedef typename extends::text_content_t text_content_t;
+
+    typedef typename extends::content_part_t content_part_t;
+    typedef typename extends::content_reader_t content_reader_t;
+    typedef typename extends::content_part_reader_t content_part_reader_t;
+
+    typedef xos::protocol::http::url::encoded::readert<content_part_reader_t> url_encoded_content_reader_t;
+    typedef xos::protocol::http::form::field form_field_t;
+    typedef xos::protocol::http::form::fields form_fields_t;
+
+    typedef xos::protocol::http::request::method::which request_method_which_t;
+    typedef xos::protocol::http::request::method::name request_method_t;
+    typedef xos::protocol::http::request::resource::identifier request_resource_t;
+    typedef xos::protocol::http::request::line request_line_t;
+    typedef xos::protocol::http::request::message request_t;
+    typedef xos::protocol::http::request::message::string_t request_string_t;
 
     typedef xos::protocol::http::response::status::code response_status_t;
     typedef xos::protocol::http::response::status::reason response_reason_t;
@@ -100,13 +132,120 @@ protected:
         return err;
     }
 
-    /// ...respond_run
-    virtual int respond_run(int argc, char_t** argv, char_t** env) {
+    /// ...request_run
+    virtual int request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        in_reader_t& reader = this->in_reader();
+        request_t& request = this->request();
+        response_t& response = this->response();
+
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_request(response, reader, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_request(response, reader, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_request(response, reader, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_request(response, reader, request, argc, argv, env))");
+        }
+        return err;
+    }
+    virtual int before_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        in_reader_t& reader = this->in_reader();
+        request_t& request = this->request();
+        ssize_t amount = 0;
+
+        LOGGER_IS_LOGGED_INFO("!(err = all_read_request_with_content(amount, request, reader, argc, argv, env))...");
+        if (!(err = all_read_request_with_content(amount, request, reader, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_read_request_with_content(amount = " << amount << ", request, reader, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_read_request_with_content(amount = " << amount << ", request, reader, argc, argv, env))");
+        }
+        return err;
+    }
+    virtual int after_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        LOGGER_IS_LOGGED_INFO("!(err = this->all_response_run(argc, argv, env))...");
+        if (!(err = this->all_response_run(argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = this->all_response_run(argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = this->all_response_run(argc, argv, env))");
+        }
+        return err;
+    }
+    /// ...file_request_run
+    virtual int file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        file_reader_t& reader = this->file_reader();
+        request_t& request = this->request();
+        response_t& response = this->response();
+
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_request(response, reader, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_request(response, reader, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_request(response, reader, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_request(response, reader, request, argc, argv, env))");
+        }
+        return err;
+    }
+    virtual int before_file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 1;
+        const string_t& filename = this->request_filename();
+        const char_t* chars = 0; size_t length = 0;
+        
+        LOGGER_IS_LOGGED_INFO("(chars = filename.has_chars(length))...");
+        if ((chars = filename.has_chars(length))) {
+            file_reader_t& reader = this->file_reader();
+            
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = filename.has_chars(" << length << "))");
+            LOGGER_IS_LOGGED_INFO("(reader.open(\"" << chars << "\"))...");
+            if ((reader.open(chars))) {
+                request_t& request = this->request();
+                ssize_t amount = 0;
+        
+                LOGGER_IS_LOGGED_INFO("...(reader.open(\"" << chars << "\"))");
+                LOGGER_IS_LOGGED_INFO("!(err = all_read_request_with_content(amount, request, reader, argc, argv, env))...");
+                if (!(err = all_read_request_with_content(amount, request, reader, argc, argv, env))) {
+                    LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_read_request_with_content(amount = " << amount << ", request, reader, argc, argv, env))");
+                } else {
+                    LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_read_request_with_content(amount = " << amount << ", request, reader, argc, argv, env))");
+                }
+                LOGGER_IS_LOGGED_INFO("(reader.close())...");
+                if ((reader.close())) {
+                    LOGGER_IS_LOGGED_INFO("...(reader.close())");
+                } else {
+                    LOGGER_IS_LOGGED_INFO("...failed on (reader.close())");
+                }
+            } else {
+                LOGGER_IS_LOGGED_INFO("...failed on (file.open(\"" << chars << "\"))");
+            }
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on (\"" << chars << "\" = filename.has_chars(" << length << "))");
+        }
+        return err;
+    }
+    virtual int after_file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        LOGGER_IS_LOGGED_INFO("!(err = after_request_run(argc, argv, env))...");
+        if (!(err = after_request_run(argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = after_request_run(argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = after_request_run(argc, argv, env))");
+        }
+        return err;
+    }
+
+    /// ...response_run
+    virtual int response_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
         out_writer_t& writer = this->out_writer();
         response_t& response = this->response();
         ssize_t amount = 0;
-        err = all_write_response(amount, writer, response, argc, argv, env);
+
+        LOGGER_IS_LOGGED_INFO("!(err = all_write_response(amount, writer, response, argc, argv, env))...");
+        if (!(err = all_write_response(amount, writer, response, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_write_response(amount = " << amount << ", writer, response, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_write_response(amount = " << amount << ", writer, response, argc, argv, env))");
+        }
         return err;
     }
 
@@ -122,18 +261,21 @@ protected:
         return err;
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+
     /// ...option...
-    int (derives::*on_set_respond_option_)(const char_t* optarg, int optind, int argc, char_t** argv, char_t** env);
-    virtual int on_set_respond_option(const char_t* optarg, int optind, int argc, char_t** argv, char_t** env) {
+    int (derives::*on_set_response_option_)(const char_t* optarg, int optind, int argc, char_t** argv, char_t** env);
+    virtual int on_set_response_option(const char_t* optarg, int optind, int argc, char_t** argv, char_t** env) {
         int err = 0;
-        if (on_set_respond_option_) {
-            err = (this->*on_set_respond_option_)(optarg, optind, argc, argv, env);
+        if (on_set_response_option_) {
+            err = (this->*on_set_response_option_)(optarg, optind, argc, argv, env);
         } else {
-            err = file_on_set_respond_option(optarg, optind, argc, argv, env);
+            err = file_on_set_response_option(optarg, optind, argc, argv, env);
         }
         return err;
     }
-    virtual int file_on_set_respond_option
+    virtual int file_on_set_response_option
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
         const char_t* chars = 0;
@@ -172,7 +314,7 @@ protected:
         }
         return err;
     }
-    virtual int string_on_set_respond_option
+    virtual int string_on_set_response_option
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
         char_t c = 0;
@@ -193,14 +335,14 @@ protected:
         }
         return err;
     }
-    virtual int set_file_on_set_respond_option(int argc, char_t** argv, char_t** env) {
+    virtual int set_file_on_set_response_option(int argc, char_t** argv, char_t** env) {
         int err = 0;
-        on_set_respond_option_ = &derives::file_on_set_respond_option;
+        on_set_response_option_ = &derives::file_on_set_response_option;
         return err;
     }
-    virtual int set_string_on_set_respond_option(int argc, char_t** argv, char_t** env) {
+    virtual int set_string_on_set_response_option(int argc, char_t** argv, char_t** env) {
         int err = 0;
-        on_set_respond_option_ = &derives::string_on_set_respond_option;
+        on_set_response_option_ = &derives::string_on_set_response_option;
         return err;
     }
 
@@ -282,7 +424,7 @@ protected:
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
         if (!(err = extends::on_file_input_option_set(optarg, optind, argc, argv, env))) {
-            if (!(err = set_file_on_set_respond_option(argc, argv, env))) {
+            if (!(err = set_file_on_set_response_option(argc, argv, env))) {
             } else {
             }
         } else {
@@ -293,10 +435,403 @@ protected:
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
         if (!(err = extends::on_string_input_option_set(optarg, optind, argc, argv, env))) {
-            if (!(err = set_string_on_set_respond_option(argc, argv, env))) {
+            if (!(err = set_string_on_set_response_option(argc, argv, env))) {
             } else {
             }
         } else {
+        }
+        return err;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+
+    /// ...process_response_to_request
+    virtual int process_response_to_request(response_t &response, reader_t& reader, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        const request_method_t& method = request.method();
+
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method(response, reader, method, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_method(response, reader, method, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method(response, reader, method, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method(response, reader, method, request, argc, argv, env))");
+        }
+        return err;
+    }
+    virtual int before_process_response_to_request(response_t &response, reader_t& reader, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_request(response_t &response, reader_t& reader, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_request(response_t &response, reader_t& reader, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_request(response, reader, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_request(response, reader, request, argc, argv, env);
+            if ((err2 = after_process_response_to_request(response, reader, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+
+    /// ...process_response_to_method
+    virtual int process_response_to_method(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        const request_method_which_t which = method.which();
+        
+        switch(which) {
+        case xos::protocol::http::request::method::GET:
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method_get(response, reader, method, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_method_get(response, reader, method, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method_get(response, reader, method, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method_get(response, reader, method, request, argc, argv, env))");
+        }
+        break;
+
+        case xos::protocol::http::request::method::POST:
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method_post(response, reader, method, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_method_post(response, reader, method, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method_post(response, reader, method, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method_post(response, reader, method, request, argc, argv, env))");
+        }
+        break;
+
+        case xos::protocol::http::request::method::restart:
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method_restart(response, reader, method, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_method_restart(response, reader, method, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method_restart(response, reader, method, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method_restart(response, reader, method, request, argc, argv, env))");
+        }
+        break;
+
+        case xos::protocol::http::request::method::start:
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method_start(response, reader, method, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_method_start(response, reader, method, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method_start(response, reader, method, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method_start(response, reader, method, request, argc, argv, env))");
+        }
+        break;
+
+        case xos::protocol::http::request::method::stop:
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method_stop(response, reader, method, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_method_stop(response, reader, method, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method_stop(response, reader, method, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method_stop(response, reader, method, request, argc, argv, env))");
+        }
+        break;
+
+        case xos::protocol::http::request::method::unknown:
+        default:
+            LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method_unknown(response, reader, method, request, argc, argv, env))...");
+            if (!(err = all_process_response_to_method_unknown(response, reader, method, request, argc, argv, env))) {
+                LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method_unknown(response, reader, method, request, argc, argv, env))");
+            } else {
+                LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method_unknown(response, reader, method, request, argc, argv, env))");
+            }
+            break;
+        } /// switch(which)
+        return err;
+    }
+    virtual int before_process_response_to_method(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_method(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_method(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_method(response, reader, method, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_method(response, reader, method, request, argc, argv, env);
+            if ((err2 = after_process_response_to_method(response, reader, method, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    /// ...process_response_to_method_get
+    virtual int process_response_to_method_get(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method_any(response, reader, method, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_method_any(response, reader, method, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method_any(response, reader, method, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method_any(response, reader, method, request, argc, argv, env))");
+        }
+        return err;
+    }
+    virtual int before_process_response_to_method_get(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_method_get(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_method_get(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_method_get(response, reader, method, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_method_get(response, reader, method, request, argc, argv, env);
+            if ((err2 = after_process_response_to_method_get(response, reader, method, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    /// ...process_response_to_method_post
+    virtual int process_response_to_method_post(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        LOGGER_IS_LOGGED_INFO("!(err = all_process_response_to_method_any(response, reader, method, request, argc, argv, env))...");
+        if (!(err = all_process_response_to_method_any(response, reader, method, request, argc, argv, env))) {
+            LOGGER_IS_LOGGED_INFO("...!(" << err << " = all_process_response_to_method_any(response, reader, method, request, argc, argv, env))");
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on !(" << err << " = all_process_response_to_method_any(response, reader, method, request, argc, argv, env))");
+        }
+        return err;
+    }
+    virtual int before_process_response_to_method_post(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_method_post(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_method_post(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_method_post(response, reader, method, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_method_post(response, reader, method, request, argc, argv, env);
+            if ((err2 = after_process_response_to_method_post(response, reader, method, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    /// ...process_response_to_method_restart
+    virtual int process_response_to_method_restart(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int before_process_response_to_method_restart(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_method_restart(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_method_restart(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_method_restart(response, reader, method, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_method_restart(response, reader, method, request, argc, argv, env);
+            if ((err2 = after_process_response_to_method_restart(response, reader, method, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    /// ...process_response_to_method_start
+    virtual int process_response_to_method_start(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int before_process_response_to_method_start(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_method_start(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_method_start(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_method_start(response, reader, method, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_method_start(response, reader, method, request, argc, argv, env);
+            if ((err2 = after_process_response_to_method_start(response, reader, method, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    /// ...process_response_to_method_stop
+    virtual int process_response_to_method_stop(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int before_process_response_to_method_stop(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_method_stop(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_method_stop(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_method_stop(response, reader, method, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_method_stop(response, reader, method, request, argc, argv, env);
+            if ((err2 = after_process_response_to_method_stop(response, reader, method, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    /// ...process_response_to_method_unknown
+    virtual int process_response_to_method_unknown(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int before_process_response_to_method_unknown(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_method_unknown(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_method_unknown(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_method_unknown(response, reader, method, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_method_unknown(response, reader, method, request, argc, argv, env);
+            if ((err2 = after_process_response_to_method_unknown(response, reader, method, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    /// ...process_response_to_method_any
+    virtual int process_response_to_method_any(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        const content_t* request_content = 0;
+        
+        LOGGER_IS_LOGGED_INFO("(request_content = request.content())...");
+        if ((request_content = request.content())) {
+            const content_t& content = *request_content;
+            size_t content_length = content.length();
+
+            LOGGER_IS_LOGGED_INFO("...(request_content = request.content())");
+            LOGGER_IS_LOGGED_INFO("(0 < (content_length = content.length()))...");
+            if ((0 < (content_length = content.length()))) {
+                const content_type_char_t* content_type_chars = 0;
+
+                LOGGER_IS_LOGGED_INFO("(content_type_chars = request.content_type_chars())...");
+                if ((content_type_chars = request.content_type_chars())) {
+                    int unequal = 0;
+                    const url_encoded_form_content_type_t url_encoded_form_content_type;
+
+                    LOGGER_IS_LOGGED_INFO("...(\"" << content_type_chars << "\" = request.content_type_chars())");
+                    LOGGER_IS_LOGGED_INFO("!(unequal = url_encoded_form_content_type.compare(c\"" << content_type_chars << "\"))...");
+                    if (!(unequal = url_encoded_form_content_type.compare(content_type_chars))) {
+                        content_part_reader_t content_part_reader(content);
+                        url_encoded_content_reader_t url_encoded_content_reader(content_part_reader);
+                        
+                        LOGGER_IS_LOGGED_INFO("...!(" << unequal << " = url_encoded_form_content_type.compare(\"" << content_type_chars << "\"))");
+                    } else {
+                        LOGGER_IS_LOGGED_INFO("...failed on !(" << unequal << " = url_encoded_form_content_type.compare(\"" << content_type_chars << "\"))");
+                    }
+                } else {
+                    LOGGER_IS_LOGGED_INFO("...failed on (" << content_type_chars << " = request.content_type_chars())");
+                }
+                LOGGER_IS_LOGGED_INFO("...(0 < (" << content_length << " = content.length()))");
+            } else {
+                LOGGER_IS_LOGGED_INFO("...failed on (0 < (" << content_length << " = content.length()))");
+            }
+        } else {
+            LOGGER_IS_LOGGED_INFO("...failed on (request_content = request.content())");
+        }
+        return err;
+    }
+    virtual int before_process_response_to_method_any(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_process_response_to_method_any(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_process_response_to_method_any(response_t &response, reader_t& reader, const request_method_t& method, const request_t& request, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_process_response_to_method_any(response, reader, method, request, argc, argv, env))) {
+            int err2 = 0;
+            err = process_response_to_method_any(response, reader, method, request, argc, argv, env);
+            if ((err2 = after_process_response_to_method_any(response, reader, method, request, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+
+    /// ...read_request
+    virtual int read_request(ssize_t& amount, request_t& request, reader_t& reader, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        char_t c = 0;
+        request.read(amount, c, reader);
+        return err;
+    }
+    virtual int before_read_request(ssize_t& amount, request_t& request, reader_t& reader, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_read_request(ssize_t& amount, request_t& request, reader_t& reader, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_read_request(ssize_t& amount, request_t& request, reader_t& reader, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_read_request(amount, request, reader, argc, argv, env))) {
+            int err2 = 0;
+            err = read_request(amount, request, reader, argc, argv, env);
+            if ((err2 = after_read_request(amount, request, reader, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+
+    /// ...read_request_with_content
+    virtual int read_request_with_content(ssize_t& amount, request_t& request, reader_t& reader, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        char_t c = 0;
+        request.read_with_content(amount, c, reader);
+        return err;
+    }
+    virtual int before_read_request_with_content(ssize_t& amount, request_t& request, reader_t& reader, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_read_request_with_content(ssize_t& amount, request_t& request, reader_t& reader, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_read_request_with_content(ssize_t& amount, request_t& request, reader_t& reader, int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_read_request_with_content(amount, request, reader, argc, argv, env))) {
+            int err2 = 0;
+            err = read_request_with_content(amount, request, reader, argc, argv, env);
+            if ((err2 = after_read_request_with_content(amount, request, reader, argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
         }
         return err;
     }
@@ -326,6 +861,9 @@ protected:
         }
         return err;
     }
+
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
     /// ...set_response_content
     virtual int set_response_content(headers_t& headers, content_t& content, int argc, char_t** argv, char** env) {
@@ -437,10 +975,19 @@ protected:
         return content;
     }
 
-    /// ...content
+    /// ...request...
     virtual content_t& request_content() const {
         return (content_t&)request_content_;
     }
+    virtual form_fields_t& request_form() const {
+        return (form_fields_t&)request_form_;
+    }
+    virtual request_t& request() const {
+        return (request_t&)request_;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
 protected:
     xos::protocol::http::response::status::codeof::OK ok_;
@@ -454,6 +1001,8 @@ protected:
     xos::protocol::http::response::message::string_t response_literal_;
 
     xos::protocol::http::message::body::content request_content_;
+    xos::protocol::http::form::fields request_form_;
+    xos::protocol::http::request::message request_;
 }; /// class maint 
 typedef maint<> main;
 

@@ -16,7 +16,7 @@
 ///   File: main_opt.hpp
 ///
 /// Author: $author$
-///   Date: 8/29/2023
+///   Date: 8/29/2023, 10/4/2023
 //////////////////////////////////////////////////////////////////////////
 #ifndef XOS_APP_CONSOLE_PROTOCOL_XTTP_BASE_MAIN_OPT_HPP
 #define XOS_APP_CONSOLE_PROTOCOL_XTTP_BASE_MAIN_OPT_HPP
@@ -142,6 +142,8 @@ protected:
     typedef typename extends::out_writer_t out_writer_t;
     typedef typename extends::err_writer_t err_writer_t;
 
+    typedef typename extends::file_reader_t file_reader_t;
+
     /// run
     int (derives::*run_)(int argc, char_t** argv, char_t** env);
     virtual int run(int argc, char_t** argv, char_t** env) {
@@ -153,6 +155,9 @@ protected:
         }
         return err;
     }
+
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
     /// ...content_run
     int (derives::*content_run_)(int argc, char_t** argv, char_t** env);
@@ -333,6 +338,9 @@ protected:
         int err = 0;
         return err;
     }
+
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
     /// on...content_option...
     virtual int on_get_content_option

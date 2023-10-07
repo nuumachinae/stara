@@ -16,26 +16,40 @@
 ///   File: main_opt.hpp
 ///
 /// Author: $author$
-///   Date: 9/2/2023
+///   Date: 9/2/2023, 10/7/2023
 //////////////////////////////////////////////////////////////////////////
 #ifndef XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_OPT_HPP
 #define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_OPT_HPP
 
 #include "xos/app/console/protocol/xttp/base/main.hpp"
 
-#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPT "respond"
-#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTARG_REQUIRED MAIN_OPT_ARGUMENT_OPTIONAL
-#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTARG_RESULT 0
-#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTARG "[string]"
-#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTUSE "Send " \
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPT "request"
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTARG_REQUIRED MAIN_OPT_ARGUMENT_OPTIONAL
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTARG_RESULT 0
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTARG "[string]"
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTUSE \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_BASE_MAIN_PROTOCOL_name " request"
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTVAL_S "r::"
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTVAL_C 'r'
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTION \
+   {XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPT, \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTARG_REQUIRED, \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTARG_RESULT, \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTVAL_C}, \
+
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPT "response"
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTARG_REQUIRED MAIN_OPT_ARGUMENT_OPTIONAL
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTARG_RESULT 0
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTARG "[string]"
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTUSE \
     XOS_APP_CONSOLE_PROTOCOL_XTTP_BASE_MAIN_PROTOCOL_name " response"
-#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTVAL_S "s::"
-#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTVAL_C 's'
-#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTION \
-   {XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPT, \
-    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTARG_REQUIRED, \
-    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTARG_RESULT, \
-    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTVAL_C}, \
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTVAL_S "s::"
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTVAL_C 's'
+#define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTION \
+   {XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPT, \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTARG_REQUIRED, \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTARG_RESULT, \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTVAL_C}, \
 
 #define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_STATUS_OK_OPT "ok"
 #define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_STATUS_OK_OPTARG_REQUIRED MAIN_OPT_ARGUMENT_OPTIONAL
@@ -67,12 +81,14 @@
 
 ///////////////////////////////////////////////////////////////////////
 #define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_OPTIONS_CHARS_EXTEND \
-    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTVAL_S \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTVAL_S \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTVAL_S \
     XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_STATUS_OK_OPTVAL_S \
     XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_STATUS_NOT_FOUND_OPTVAL_S \
 
 #define XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_OPTIONS_OPTIONS_EXTEND \
-    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTION \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTION \
+    XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTION \
     XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_STATUS_OK_OPTION \
     XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_STATUS_NOT_FOUND_OPTION \
 
@@ -138,6 +154,26 @@ protected:
     typedef typename extends::out_writer_t out_writer_t;
     typedef typename extends::err_writer_t err_writer_t;
 
+    typedef typename extends::file_reader_t file_reader_t;
+
+    typedef typename extends::headers_t headers_t;
+    typedef typename extends::content_encoding_header_t content_encoding_header_t;
+    typedef typename extends::content_type_header_t content_type_header_t;
+    typedef typename extends::content_length_header_t content_length_header_t;
+
+    typedef typename extends::content_t content_t;
+    typedef typename extends::content_string_t content_string_t;
+    typedef typename extends::content_type_t content_type_t;
+    typedef typename extends::content_type_char_t content_type_char_t;
+    typedef typename extends::url_encoded_form_content_type_t url_encoded_form_content_type_t;
+    typedef typename extends::text_content_type_t text_content_type_t;
+    typedef typename extends::json_content_type_t json_content_type_t;
+    typedef typename extends::text_content_t text_content_t;
+
+    typedef typename extends::content_part_t content_part_t;
+    typedef typename extends::content_reader_t content_reader_t;
+    typedef typename extends::content_part_reader_t content_part_reader_t;
+
     /// run
     int (derives::*run_)(int argc, char_t** argv, char_t** env);
     virtual int run(int argc, char_t** argv, char_t** env) {
@@ -150,62 +186,151 @@ protected:
         return err;
     }
 
-    /// ...respond_run
-    int (derives::*respond_run_)(int argc, char_t** argv, char_t** env);
-    virtual int respond_run(int argc, char_t** argv, char_t** env) {
+    ///////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
+
+    /// ...request_run
+    virtual int request_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
-        if (respond_run_) {
-            if (!(err = (this->*respond_run_)(argc, argv, env))) {
+        return err;
+    }
+    virtual int before_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_request_run(argc, argv, env))) {
+            int err2 = 0;
+            err = request_run(argc, argv, env);
+            if ((err2 = after_request_run(argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    virtual int set_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        run_ = &derives::all_request_run;
+        return err;
+    }
+    virtual int request_run_set(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int unset_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        run_ = 0;
+        return err;
+    }
+    virtual int request_run_unset(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+
+    /// ...file_request_run
+    virtual int file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int before_file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int after_file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int all_file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (!(err = before_file_request_run(argc, argv, env))) {
+            int err2 = 0;
+            err = file_request_run(argc, argv, env);
+            if ((err2 = after_file_request_run(argc, argv, env))) {
+                if (!(err)) err = err2;
+            }
+        }
+        return err;
+    }
+    virtual int set_file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        run_ = &derives::all_file_request_run;
+        return err;
+    }
+    virtual int file_request_run_set(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+    virtual int unset_file_request_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        run_ = 0;
+        return err;
+    }
+    virtual int file_request_run_unset(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        return err;
+    }
+
+    /// ...response_run
+    int (derives::*response_run_)(int argc, char_t** argv, char_t** env);
+    virtual int response_run(int argc, char_t** argv, char_t** env) {
+        int err = 0;
+        if (response_run_) {
+            if (!(err = (this->*response_run_)(argc, argv, env))) {
             } else {
             }
         } else {
-            if (!(err = default_respond_run(argc, argv, env))) {
+            if (!(err = default_response_run(argc, argv, env))) {
             } else {
             }
         }
         return err;
     }
-    virtual int default_respond_run(int argc, char_t** argv, char_t** env) {
+    virtual int default_response_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
         if (!(err = extends::run(argc, argv, env))) {
         } else {
         }
         return err;
     }
-    virtual int before_respond_run(int argc, char_t** argv, char_t** env) {
+    virtual int before_response_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
         return err;
     }
-    virtual int after_respond_run(int argc, char_t** argv, char_t** env) {
+    virtual int after_response_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
         return err;
     }
-    virtual int all_respond_run(int argc, char_t** argv, char_t** env) {
+    virtual int all_response_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
-        if (!(err = before_respond_run(argc, argv, env))) {
+        if (!(err = before_response_run(argc, argv, env))) {
             int err2 = 0;
-            err = respond_run(argc, argv, env);
-            if ((err2 = after_respond_run(argc, argv, env))) {
+            err = response_run(argc, argv, env);
+            if ((err2 = after_response_run(argc, argv, env))) {
                 if (!(err)) err = err2;
             }
         }
         return err;
     }
-    virtual int set_respond_run(int argc, char_t** argv, char_t** env) {
+    virtual int set_response_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
-        run_ = &derives::all_respond_run;
+        run_ = &derives::all_response_run;
         return err;
     }
-    virtual int respond_run_set(int argc, char_t** argv, char_t** env) {
+    virtual int response_run_set(int argc, char_t** argv, char_t** env) {
         int err = 0;
         return err;
     }
-    virtual int unset_respond_run(int argc, char_t** argv, char_t** env) {
+    virtual int unset_response_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
         run_ = 0;
         return err;
     }
-    virtual int respond_run_unset(int argc, char_t** argv, char_t** env) {
+    virtual int response_run_unset(int argc, char_t** argv, char_t** env) {
         int err = 0;
         return err;
     }
@@ -270,56 +395,70 @@ protected:
         return err;
     }
 
-    /// on...respond_option...
-    virtual int on_get_respond_option
+    ///////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
+
+    /// on...request_option...
+    virtual int on_get_request_option
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
         return err;
     }
-    virtual int on_respond_option_get
+    virtual int on_request_option_get
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
-        if (!(err = set_respond_run(argc, argv, env))) {
-            if (!(err = respond_run_set(argc, argv, env))) {
+        if (!(err = set_request_run(argc, argv, env))) {
+            if (!(err = request_run_set(argc, argv, env))) {
             } else {
             }
         } else {
         }
         return err;
     }
-    virtual int on_set_respond_option
+    virtual int on_set_request_option
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
         if ((optarg) && (optarg[0])) {
+            string_t& request_filename = this->request_filename();
+            request_filename.assign(optarg);
         } else {
         }
         return err;
     }
-    virtual int on_respond_option_set
+    virtual int on_request_option_set
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
-        if (!(err = set_respond_run(argc, argv, env))) {
-            if (!(err = respond_run_set(argc, argv, env))) {
+        if ((optarg) && (optarg[0])) {
+            if (!(err = set_file_request_run(argc, argv, env))) {
+                if (!(err = file_request_run_set(argc, argv, env))) {
+                } else {
+                }
             } else {
             }
         } else {
+            if (!(err = set_request_run(argc, argv, env))) {
+                if (!(err = request_run_set(argc, argv, env))) {
+                } else {
+                }
+            } else {
+            }
         }
         return err;
     }
-    virtual int on_respond_option
+    virtual int on_request_option
     (int optval, const char_t* optarg, const char_t* optname,
      int optind, int argc, char_t**argv, char_t**env) {
         int err = 0;
         if ((optarg) && (optarg[0])) {
-            if (!(err = on_set_respond_option(optarg, optind, argc, argv, env))) {
-                if (!(err = on_respond_option_set(optarg, optind, argc, argv, env))) {
+            if (!(err = on_set_request_option(optarg, optind, argc, argv, env))) {
+                if (!(err = on_request_option_set(optarg, optind, argc, argv, env))) {
                 } else {
                 }
             } else {
             }
         } else {
-            if (!(err = on_get_respond_option(optarg, optind, argc, argv, env))) {
-                if (!(err = on_respond_option_get(optarg, optind, argc, argv, env))) {
+            if (!(err = on_get_request_option(optarg, optind, argc, argv, env))) {
+                if (!(err = on_request_option_get(optarg, optind, argc, argv, env))) {
                 } else {
                 }
             } else {
@@ -327,9 +466,72 @@ protected:
         }
         return err;
     }
-    virtual const char_t* respond_option_usage(const char_t*& optarg, const struct option* longopt) {
-        const char_t* chars = XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTUSE;
-        optarg = XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTARG;
+    virtual const char_t* request_option_usage(const char_t*& optarg, const struct option* longopt) {
+        const char_t* chars = XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTUSE;
+        optarg = XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTARG;
+        return chars;
+    }
+
+    /// on...response_option...
+    virtual int on_get_response_option
+    (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
+        int err = 0;
+        return err;
+    }
+    virtual int on_response_option_get
+    (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
+        int err = 0;
+        if (!(err = set_response_run(argc, argv, env))) {
+            if (!(err = response_run_set(argc, argv, env))) {
+            } else {
+            }
+        } else {
+        }
+        return err;
+    }
+    virtual int on_set_response_option
+    (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
+        int err = 0;
+        if ((optarg) && (optarg[0])) {
+        } else {
+        }
+        return err;
+    }
+    virtual int on_response_option_set
+    (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
+        int err = 0;
+        if (!(err = set_response_run(argc, argv, env))) {
+            if (!(err = response_run_set(argc, argv, env))) {
+            } else {
+            }
+        } else {
+        }
+        return err;
+    }
+    virtual int on_response_option
+    (int optval, const char_t* optarg, const char_t* optname,
+     int optind, int argc, char_t**argv, char_t**env) {
+        int err = 0;
+        if ((optarg) && (optarg[0])) {
+            if (!(err = on_set_response_option(optarg, optind, argc, argv, env))) {
+                if (!(err = on_response_option_set(optarg, optind, argc, argv, env))) {
+                } else {
+                }
+            } else {
+            }
+        } else {
+            if (!(err = on_get_response_option(optarg, optind, argc, argv, env))) {
+                if (!(err = on_response_option_get(optarg, optind, argc, argv, env))) {
+                } else {
+                }
+            } else {
+            }
+        }
+        return err;
+    }
+    virtual const char_t* response_option_usage(const char_t*& optarg, const struct option* longopt) {
+        const char_t* chars = XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTUSE;
+        optarg = XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTARG;
         return chars;
     }
 
@@ -472,9 +674,13 @@ protected:
         int err = 0;
         switch(optval) {
 
-        case XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTVAL_C:
-            err = this->on_respond_option(optval, optarg, optname, optind, argc, argv, env);
+        case XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTVAL_C:
+            err = this->on_request_option(optval, optarg, optname, optind, argc, argv, env);
             break;
+        case XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTVAL_C:
+            err = this->on_response_option(optval, optarg, optname, optind, argc, argv, env);
+            break;
+
         case XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_STATUS_OK_OPTVAL_C:
             err = this->on_status_ok_option(optval, optarg, optname, optind, argc, argv, env);
             break;
@@ -493,9 +699,13 @@ protected:
         const char_t* chars = "";
         switch(longopt->val) {
 
-        case XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPOND_OPTVAL_C:
-            chars = this->respond_option_usage(optarg, longopt);
+        case XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_REQUEST_OPTVAL_C:
+            chars = this->request_option_usage(optarg, longopt);
             break;
+        case XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_RESPONSE_OPTVAL_C:
+            chars = this->response_option_usage(optarg, longopt);
+            break;
+
         case XOS_APP_CONSOLE_PROTOCOL_XTTP_SERVER_MAIN_STATUS_OK_OPTVAL_C:
             chars = this->status_ok_option_usage(optarg, longopt);
             break;
@@ -530,7 +740,34 @@ protected:
         return _args;
     }
 
+    /// ...request_filename
+    virtual string_t& set_request_filename(const string_t& to) {
+        string_t& request_filename = this->request_filename();
+        request_filename.assign(to);
+        return request_filename;
+    }
+    virtual string_t& set_request_filename(const char_t* to) {
+        string_t& request_filename = this->request_filename();
+        request_filename.assign(to);
+        return request_filename;
+    }
+    virtual string_t& set_request_filename(const char_t* to, size_t length) {
+        string_t& request_filename = this->request_filename();
+        request_filename.assign(to, length);
+        return request_filename;
+    }
+    virtual string_t& request_filename() const {
+        return (string_t&)request_filename_;
+    }
+
+    /// ...file_reader
+    virtual file_reader_t& file_reader() const {
+        return (file_reader_t&)file_reader_;
+    }
+    
 protected:
+    string_t request_filename_;
+    file_reader_t file_reader_;
 }; /// class main_optt 
 typedef main_optt<> main_opt;
 

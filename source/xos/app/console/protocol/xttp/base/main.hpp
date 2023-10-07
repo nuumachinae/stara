@@ -16,7 +16,7 @@
 ///   File: main.hpp
 ///
 /// Author: $author$
-///   Date: 8/29/2023
+///   Date: 8/29/2023, 10/7/2023
 //////////////////////////////////////////////////////////////////////////
 #ifndef XOS_APP_CONSOLE_PROTOCOL_XTTP_BASE_MAIN_HPP
 #define XOS_APP_CONSOLE_PROTOCOL_XTTP_BASE_MAIN_HPP
@@ -35,6 +35,7 @@
 #include "xos/protocol/http/content/type/nameof.hpp"
 #include "xos/protocol/http/content/type/which.hpp"
 
+#include "xos/protocol/http/url/encoded/form/content/type.hpp"
 #include "xos/protocol/http/text/plain/content/type.hpp"
 #include "xos/protocol/http/text/json/content/type.hpp"
 #include "xos/protocol/http/text/content.hpp"
@@ -99,6 +100,8 @@ protected:
     typedef typename extends::out_writer_t out_writer_t;
     typedef typename extends::err_writer_t err_writer_t;
 
+    typedef typename extends::file_reader_t file_reader_t;
+
     typedef xos::protocol::xttp::content::json::boolean json_boolean_t;
     typedef xos::protocol::xttp::content::json::number json_number_t;
     typedef xos::protocol::xttp::content::json::string json_string_t;
@@ -133,17 +136,23 @@ protected:
 
     typedef xos::protocol::http::content::type::which_t content_type_which_t;
     typedef xos::protocol::http::content::type::name content_type_t;
+    typedef xos::protocol::http::content::type::name::char_t content_type_char_t;
 
     typedef xos::protocol::http::message::header::content::encoding content_encoding_header_t;
     typedef xos::protocol::http::content::encoding::which_t content_encoding_which_t;
     typedef xos::protocol::http::content::encoding::name content_encoding_t;
 
+    typedef xos::protocol::http::url::encoded::form::content::type url_encoded_form_content_type_t;
     typedef xos::protocol::http::text::plain::content::type text_content_type_t;
     typedef xos::protocol::http::text::json::content::type json_content_type_t;
     typedef xos::protocol::http::text::content text_content_t;
     typedef xos::protocol::http::message::body::content content_t;
     typedef xos::protocol::http::message::body::content::string_t content_string_t;
     typedef xos::protocol::http::protocol::identifier protocol_t;
+
+    typedef xos::protocol::xttp::message::part content_part_t;
+    typedef xos::protocol::xttp::message::part::reader_t content_reader_t;
+    typedef xos::io::string::readert<content_part_t, content_reader_t> content_part_reader_t;
 
     /// run
     int (derives::*run_)(int argc, char_t** argv, char_t** env);
@@ -157,6 +166,9 @@ protected:
         return err;
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    /// ...content...run
+    /// ...
     /// ...content_run
     virtual int content_run(int argc, char_t** argv, char_t** env) {
         int err = 0;
@@ -164,8 +176,13 @@ protected:
         const char_t* chars = 0;
         content_t& content = this->content();
         
+        LOGGER_IS_LOGGED_INFO("(chars = content.has_chars(length))...");
         if ((chars = content.has_chars(length))) {
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = content.has_chars(" << length << "))");
+            LOGGER_IS_LOGGED_INFO("this->outln(chars = \"" << chars << "\", length = " << length << ")...");
             this->outln(chars, length);
+        } else {
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = content.has_chars(" << length << "))");
         }
         return err;
     }
@@ -176,8 +193,13 @@ protected:
         const char_t* chars = 0;
         content_type_t& content_type = this->content_type();
         
+        LOGGER_IS_LOGGED_INFO("(chars = content_type.has_chars(length))...");
         if ((chars = content_type.has_chars(length))) {
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = content_type.has_chars(" << length << "))");
+            LOGGER_IS_LOGGED_INFO("this->outln(chars = \"" << chars << "\", length = " << length << ")...");
             this->outln(chars, length);
+        } else {
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = content_type.has_chars(" << length << "))");
         }
         return err;
     }
@@ -188,12 +210,23 @@ protected:
         const char_t* chars = 0;
         content_encoding_t& content_encoding = this->content_encoding();
         
+        LOGGER_IS_LOGGED_INFO("(chars = content_encoding.has_chars(length))...");
         if ((chars = content_encoding.has_chars(length))) {
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = content_encoding.has_chars(" << length << "))");
+            LOGGER_IS_LOGGED_INFO("this->outln(chars = \"" << chars << "\", length = " << length << ")...");
             this->outln(chars, length);
+        } else {
+            LOGGER_IS_LOGGED_INFO("...(\"" << chars << "\" = content_encoding.has_chars(" << length << "))");
         }
         return err;
     }
+    /// ...
+    /// ...content...run
+    //////////////////////////////////////////////////////////////////////////
 
+    //////////////////////////////////////////////////////////////////////////
+    /// ...option...
+    /// ...
     /// ...option...
     int (derives::*on_set_content_option_)(const char_t* optarg, int optind, int argc, char_t** argv, char_t** env);
     virtual int on_set_content_option(const char_t* optarg, int optind, int argc, char_t** argv, char_t** env) {
@@ -275,7 +308,6 @@ protected:
         on_set_content_option_ = &derives::string_on_set_content_option;
         return err;
     }
-
     /// on_..._input_option_set
     virtual int on_file_input_option_set
     (const char_t* optarg, int optind, int argc, char_t**argv, char_t**env) {
@@ -299,7 +331,13 @@ protected:
         }
         return err;
     }
+    /// ...
+    /// ...option...
+    //////////////////////////////////////////////////////////////////////////
 
+    //////////////////////////////////////////////////////////////////////////
+    /// content...
+    /// ...
     /// content_encoding...
     virtual content_encoding_header_t& content_encoding_header() const {
         return (content_encoding_header_t&)content_encoding_header_;
@@ -416,6 +454,9 @@ protected:
     virtual content_string_t& content_literal() const {
         return (content_string_t&)content_literal_;
     }
+    /// ...
+    /// content...
+    //////////////////////////////////////////////////////////////////////////
 
     /// protocol
     virtual protocol_t& protocol() const {
